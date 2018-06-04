@@ -15,16 +15,10 @@ nrngui init.hoc
 Click the RunAll button.  After a minute the simulation completes
 and a figure similar to figure 15 in the paper is displayed:<p/>
 <img src="./nrnscreenshot.png" alt="nrn screenshot" width="550">
-<p/>Also a file called PeakDepol.dat will be created which you can graph with your favorite graphing program.  For example in matlab you can type an instruction on the unix command line that will make a file without the header information:<p/>
-tail -17 PeakDepol.dat >a.dat
-<p/>And then start matlab and type a few lines to create graph like figure 15 in the paper:<p/>
-load a.dat<br/>
-figure<br/>
-for i=2:6<br/>
-semilogx(a(:,1),a(:,i))<br/>
-hold on<br/>
-end<br/>
-<p/>
+<p/>Also a file called PeakDepol.dat will be created which you can graph with your favorite graphing program.  The matlab program included in this archive:<br/>
+plotDepolarization.m<br/>
+was used to make the publication figure 15.  It requires a program fixPSlinestyle.m from the matlab file exchange to re-write an output fig.eps file however will generate a figure onscreen without it.
 The graph generated should look like this:<p>
 <img src="./screenshot.png" alt="screenshot">
+<p/> 20180605 S Appukuttan contributed the matlab plotting program plotDepolarization.m
 </html>

@@ -135,12 +135,11 @@ proc plotGraph() { localobj vecRatioLog
 	graphPeak.view(0,0,1,1,400,500,400,300)
 	graphPeak.exec_menu("View = plot")
 }
-extra_ctr=1
+
 xpanel("Run Simulation")
 	xvalue("RATIO_ra_by_re", "RATIO_ra_by_re")		
 	xlabel("")
 	xlabel("Run Simulation")
-	//xbutton("RunSim", "runSim(extra_ctr)")	
 	xbutton("RunAll","runAll()")
 	xlabel("After RunAll runs a graph similar to fig 15 is displayed")
 	xlabel("")
