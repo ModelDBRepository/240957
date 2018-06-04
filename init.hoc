@@ -1,0 +1,5 @@
+load_file("nrngui.hoc")
+load_file("neuron_morpho.hoc")
+load_file("extracellspace.hoc")
+load_file("dataprocs.hoc")
+xopen("session.ses")

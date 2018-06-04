@@ -1,0 +1,147 @@
+//Setting up the Stimulus	
+objref stim
+neuron[0].soma stim = new IClamp(0.5)
+stim.del = 5	//ms
+stim.dur = 1.5	//ms
+stim.amp = 1.5	//nA
+
+//Setting up the Simulation
+access neuron[0].soma
+tstop = 15
+
+objref recv_axon, recv_soma, recv_pdend, recv_ddend1, recv_ddend2
+objref vecv_axon, vecv_soma, vecv_pdend, vecv_ddend1, vecv_ddend2
+objref savdata, tempmatrix, graphPeak
+
+proc runSim() { local flag, ctr
+	ctr = $1
+	print "ctr = ", ctr
+
+	//Run the simulation
+	run()
+				
+	//Action potential identified by zero crossing
+	vecv_axon.x[ctr] = recv_axon.max() - v_init		
+	vecv_soma.x[ctr] = recv_soma.max() - v_init
+	vecv_pdend.x[ctr] = recv_pdend.max() - v_init
+	vecv_ddend1.x[ctr] = recv_ddend1.max() - v_init
+	vecv_ddend2.x[ctr] = recv_ddend2.max() - v_init
+}
+
+//Defining values of RATIO_ra_by_re
+objref vecRatio
+
+vecRatio = new Vector()
+vecRatio.append(10^-5.0)
+vecRatio.append(10^-4.75)
+vecRatio.append(10^-4.50)
+vecRatio.append(10^-4.25)
+vecRatio.append(10^-4.0)
+vecRatio.append(10^-3.75)
+vecRatio.append(10^-3.50)
+vecRatio.append(10^-3.25)
+vecRatio.append(10^-3.00)
+vecRatio.append(10^-2.75)
+vecRatio.append(10^-2.50)
+vecRatio.append(10^-2.25)
+vecRatio.append(10^-2.00)
+vecRatio.append(10^-1.75)
+vecRatio.append(10^-1.50)
+vecRatio.append(10^-1.25)
+vecRatio.append(10^-1.00)
+
+proc recalcParams() {
+	Re = Ra/RATIO_ra_by_re	// Ohm.cm
+	xraxial_value = Re*1e-6/(PI*((diam/2)^2)*1e-8)	// MOhm/cm
+
+	Re_Ohm = Re*1e-6*L*1e-4/(PI*((diam/2)^2)*1e-8)	// MOhm
+	rlink = Re_Ohm/nseg					// MOhm
+	glink = 1000/rlink 					// nS	
+	ge_value = (glink*0.1)/area(0.9999)	// S/cm2
+
+	setExtra()
+	setExtraLink()
+}
+
+proc runAll() { local i
+	
+	vecv_axon = new Vector(vecRatio.size())
+	vecv_soma = new Vector(vecRatio.size())
+	vecv_pdend = new Vector(vecRatio.size())
+	vecv_ddend1 = new Vector(vecRatio.size())
+	vecv_ddend2 = new Vector(vecRatio.size())
+	
+	recv_axon = new Vector()
+	recv_axon.record(&neuron[1].axon.v(0.5))
+	recv_soma = new Vector()
+	recv_soma.record(&neuron[1].soma.v(0.5))
+	recv_pdend = new Vector()
+	recv_pdend.record(&neuron[1].p_dend[0].v(0.5))
+	recv_ddend1 = new Vector()
+	recv_ddend1.record(&neuron[1].d_dend[0].v(0.5))
+	recv_ddend2 = new Vector()
+	recv_ddend2.record(&neuron[1].d_dend[1].v(0.5))
+	
+	for (i=0; i<vecRatio.size(); i=i+1) {
+		RATIO_ra_by_re = vecRatio.x[i]
+		recalcParams()
+				
+		print "\nRATIO_ra_by_re = ", RATIO_ra_by_re, "\n"
+		runSim(i)
+	}
+	
+	savdata = new File()
+	savdata.wopen("PeakDepol.dat")
+
+	savdata.printf("RATIO_ra_by_re\tAxon\tSoma\tPDend\tDDend0\tDDend1\n")
+
+	tempmatrix = new Matrix()
+	tempmatrix.resize(vecRatio.size(),6)
+	tempmatrix.setcol(0, vecRatio)
+	tempmatrix.setcol(1, vecv_axon)
+	tempmatrix.setcol(2, vecv_soma)
+	tempmatrix.setcol(3, vecv_pdend)
+	tempmatrix.setcol(4, vecv_ddend1)
+	tempmatrix.setcol(5, vecv_ddend2)
+	tempmatrix.fprint(savdata, "%g\t")
+	savdata.close()
+	
+	print "================================================"
+	print "Completed"
+	print "================================================"
+	
+	plotGraph()
+}
+
+proc plotGraph() { localobj vecRatioLog
+	vecRatioLog = new Vector()
+	for (i=0; i<vecRatio.size(); i=i+1) {
+		vecRatioLog.append(log(vecRatio.x[i]))
+	}	
+
+	graphPeak = new Graph(0)
+	vecv_soma.plot(graphPeak, vecRatioLog, 2, 3)
+	vecv_axon.plot(graphPeak, vecRatioLog, 3, 3)
+	vecv_pdend.plot(graphPeak, vecRatioLog, 4, 3)
+	vecv_ddend1.plot(graphPeak, vecRatioLog, 5, 3)
+	graphPeak.color(2)
+	graphPeak.label("Soma")
+	graphPeak.color(3)
+	graphPeak.label("Axon")
+	graphPeak.color(4)
+	graphPeak.label("P_dend")
+	graphPeak.color(5)
+	graphPeak.label("D_dend")
+	graphPeak.view(0,0,1,1,400,500,400,300)
+	graphPeak.exec_menu("View = plot")
+}
+extra_ctr=1
+xpanel("Run Simulation")
+	xvalue("RATIO_ra_by_re", "RATIO_ra_by_re")		
+	xlabel("")
+	xlabel("Run Simulation")
+	//xbutton("RunSim", "runSim(extra_ctr)")	
+	xbutton("RunAll","runAll()")
+	xlabel("After RunAll runs a graph similar to fig 15 is displayed")
+	xlabel("")
+xpanel(50, 750)

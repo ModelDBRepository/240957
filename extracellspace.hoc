@@ -1,0 +1,135 @@
+objref slist1, slist2, list_temp1, list_temp2
+objref gmat, cmat, bvec, e, xl, layer, sl, lm
+
+//Define
+RATIO_ra_by_re = 0.01
+Re = Ra/RATIO_ra_by_re	// Ohm.cm
+xraxial_value = Re*1e-6/(PI*((diam/2)^2)*1e-8)	// MOhm/cm
+
+Re_Ohm = Re*1e-6*L*1e-4/(PI*((diam/2)^2)*1e-8)	// MOhm
+rlink = Re_Ohm/nseg					// MOhm
+glink = 1000/rlink 					// nS	
+ge_value = (glink*0.1)/area(0.9999)	// S/cm2
+
+proc setExtra() {
+	forall {
+		insert extracellular
+		xc[0] = 0
+		xc[1] = 0		
+		
+		xg[0] = 1e-9	// Infinite Resistance	
+		xg[1] = 1e-9	// Infinite Resistance
+		
+		xraxial[0] = xraxial_value	// MOhm/cm
+		xraxial[1] = 1e9  // Infinite Resistance
+	}
+	
+	print "_________________________________________"
+	print "Extracellular Mechanism Inserted"
+	print "_________________________________________"
+}
+setExtra()
+
+proc setExtraLink() {
+	slist1 = new SectionList() // connected sections in neuron 1
+	slist2 = new SectionList() // connected sections in neuron 2
+	// ensure that the order is the same
+	neuron[0].axon slist1.append()
+	neuron[1].axon slist2.append()
+	neuron[0].soma slist1.append()
+	neuron[1].soma slist2.append()
+	neuron[0].p_dend[0] slist1.append()
+	neuron[1].p_dend[0] slist2.append()
+	neuron[0].d_dend[0] slist1.append()
+	neuron[1].d_dend[0] slist2.append()
+	neuron[0].d_dend[1] slist1.append()
+	neuron[1].d_dend[1] slist2.append()
+
+	nsegs = 0	// will contain total connected segs
+	forsec slist1 {
+		nsegs += nseg
+	}
+	print "_________________________________________"
+	print "Total Connected Segments = ", 2*nsegs
+	print "_________________________________________"
+	
+	gmat = new Matrix(2*nsegs, 2*nsegs, 2)
+	cmat = new Matrix(2*nsegs, 2*nsegs, 2)
+	bvec = new Vector(2*nsegs)
+	xl = new Vector()
+	layer = new Vector(2*nsegs)
+	layer.fill(1)
+	
+	forsec slist1 {
+		for (x, 0) {
+			xl.append(x)	// for neuron 1
+			xl.append(x)	// for neuron 2
+		}
+	}
+
+	e = new Vector(2*nsegs)
+	sl = new SectionList()
+	
+	list_temp1 = new List()
+	forsec slist1 {
+		for (x, 0) {
+			list_temp1.append(new SectionRef())
+		}
+		slist1.remove()
+	}
+	list_temp2 = new List()
+	forsec slist2 {
+		for (x, 0) {
+			list_temp2.append(new SectionRef())
+		}
+		slist2.remove()
+	}
+
+	for i = 0, nsegs-1 {
+		list_temp1.object(i).sec sl.append()
+		list_temp2.object(i).sec sl.append()
+	}
+	
+	ge = ge_value	// S/cm2
+
+	for (i=0; i<(2*nsegs); i=i+2) {
+		gmat.x[i][i] += ge
+		gmat.x[i+1][i+1] += ge
+		gmat.x[i][i+1] += -ge
+		gmat.x[i+1][i] += -ge	
+	}
+	
+	lm = new LinearMechanism(cmat, gmat, e, bvec, sl, xl, layer)
+	
+	print "_________________________________________"
+	print "Extracellular Connected Via Link"
+	print "_________________________________________"	
+}
+setExtraLink()
+
+// Function to print details to verify implementation
+proc printInfo() {
+	print "_________________________________________"	
+	print "gmat = "
+	print gmat.printf()
+	print "_________________________________________"	
+	print "cmat = "
+	print cmat.printf()
+	print "_________________________________________"	
+	print "e = "
+	print e.printf()
+	print "_________________________________________"	
+	print "bvec = "
+	print bvec.printf()
+	print "_________________________________________"	
+	print "sl = "
+	print sl.printnames()
+	print "_________________________________________"	
+	print "xl = "
+	print xl.printf()
+	print "_________________________________________"	
+	print "layer = "
+	print layer.printf()
+	print "_________________________________________"	
+}
+//printInfo()

@@ -1,0 +1,30 @@
+<html>
+This is the readme for the model associated with figure 15 from the paper:<p/>
+Appukuttan S, Brain KL, Manchanda R (2017) Modeling extracellular fields for a three-dimensional network of cells using NEURON. J Neurosci Methods 290:27-38
+<br/>
+<a href="http://dx.doi.org/10.1016/j.jneumeth.2017.07.005">http://dx.doi.org/10.1016/j.jneumeth.2017.07.005</a><p/>
+This model was contributed by S Appukuttan.  It is written in the NEURON simulator which is freely available from<br/>
+<a href="http://neuron.yale.edu">http://neuron.yale.edu</a><p/>
+<p/>If you need more help than given below in running the simulation please consult this page:<br/>
+<a href="https://senselab.med.yale.edu/ModelDB/NEURON_DwnldGuide.cshtml">https://senselab.med.yale.edu/ModelDB/NEURON_DwnldGuide.cshtml</a><p/>
+Usage:<br/>
+------<br/>
+Auto-launch from modeldb (if NEURON installed and the browser is configured) or download and extract the archive and start with a command like<p/>
+nrngui init.hoc
+<p/>on unix/linux, or start the init.hoc file on mswin or mac os x.<p/>
+Click the RunAll button.  After a minute the simulation completes
+and a figure similar to figure 15 in the paper is displayed:<p/>
+<img src="./nrnscreenshot.png" alt="nrn screenshot" width="550">
+<p/>Also a file called PeakDepol.dat will be created which you can graph with your favorite graphing program.  For example in matlab you can type an instruction on the unix command line that will make a file without the header information:<p/>
+tail -17 PeakDepol.dat >a.dat
+<p/>And then start matlab and type a few lines to create graph like figure 15 in the paper:<p/>
+load a.dat<br/>
+figure<br/>
+for i=2:6<br/>
+semilogx(a(:,1),a(:,i))<br/>
+hold on<br/>
+end<br/>
+<p/>
+The graph generated should look like this:<p>
+<img src="./screenshot.png" alt="screenshot">
+</html>
