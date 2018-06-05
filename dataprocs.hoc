@@ -120,14 +120,14 @@ proc plotGraph() { localobj vecRatioLog
 	}	
 
 	graphPeak = new Graph(0)
-	vecv_soma.plot(graphPeak, vecRatioLog, 2, 3)
-	vecv_axon.plot(graphPeak, vecRatioLog, 3, 3)
+	vecv_axon.plot(graphPeak, vecRatioLog, 2, 3)
+	vecv_soma.plot(graphPeak, vecRatioLog, 3, 3)
 	vecv_pdend.plot(graphPeak, vecRatioLog, 4, 3)
 	vecv_ddend1.plot(graphPeak, vecRatioLog, 5, 3)
 	graphPeak.color(2)
-	graphPeak.label("Soma")
-	graphPeak.color(3)
 	graphPeak.label("Axon")
+	graphPeak.color(3)
+	graphPeak.label("Soma")
 	graphPeak.color(4)
 	graphPeak.label("P_dend")
 	graphPeak.color(5)
